@@ -16,7 +16,10 @@ func New(c cache.Cache) *Server {
 func (s *Server) Listen(addr string) {
 	http.Handle("/cache/", s.cacheHandler())
 	http.Handle("/status/", s.statusHandler())
-	http.ListenAndServe(addr, nil)
+	err := http.ListenAndServe(addr, nil)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (s *Server) cacheHandler() http.Handler {
