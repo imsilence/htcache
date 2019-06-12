@@ -1,6 +1,23 @@
 # 测试 #
 
+## 编译 ##
+
+1. 安装依赖包
+    ```
+    sudo apt install build-essential zlib1g-dev libsnappy-dev
+    ```
+2. 编译rocksdb静态链接库
+    ```
+    git submodule init
+    git submodule update
+
+    cd rocksdb && make static_lib
+    ```
+3. 编译程序
+    `go build`
+
 ## http ##
+
 1. 获取状态
     `curl -XGET "localhost:8888/status/" -v`
 2. 添加
