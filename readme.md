@@ -16,6 +16,12 @@
 3. 编译程序
     `go build`
 
+4. 启动
+    ```
+    ./htcache -type rocksdb
+    ./htcache -type memory
+    ```
+
 ## http ##
 
 1. 获取状态
