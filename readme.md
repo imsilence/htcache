@@ -4,7 +4,7 @@
 
 1. 安装依赖包
     ```
-    sudo apt install build-essential zlib1g-dev libsnappy-dev
+    sudo apt install build-essential zlib1g-dev libsnappy-dev libbz2-dev
     ```
 2. 编译rocksdb静态链接库
     ```

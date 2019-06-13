@@ -1,2 +1,4 @@
-rocksdb.db
+/libs
+/rocksdb.db
+
 htcache
