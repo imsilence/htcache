@@ -25,7 +25,7 @@ func Register(name string, new NewFunc) {
 	providers[name] = new
 }
 
-func New(name string) Cache {
+func NewCache(name string) Cache {
 	if new, ok := providers[name]; ok {
 		return new()
 	}

@@ -3,22 +3,25 @@ package cmd
 import (
 	"fmt"
 	"htcache/cache"
-	"htcache/server"
-	"github.com/spf13/cobra"
 	_ "htcache/cache/provider"
+	"htcache/server"
 	_ "htcache/server/provider"
+
+	"github.com/spf13/cobra"
 )
 
-var ctype string
-var stype string
-var sport int
+var (
+	ctype string
+	stype string
+	sport int
+)
 
 var serverCmd *cobra.Command = &cobra.Command{
 	Use:   "server",
 	Short: "htcache server",
 	Long:  "htcache server",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		server.New(stype, cache.New(ctype)).Listen(fmt.Sprintf(":%d", sport))
+		server.NewServer(stype, cache.NewCache(ctype)).Listen(fmt.Sprintf(":%d", sport))
 		return nil
 	},
 }

@@ -3,10 +3,9 @@ package cmd
 import (
 	"fmt"
 	"os"
+
 	"github.com/spf13/cobra"
 )
-
-var verbose bool
 
 var rootCmd *cobra.Command = &cobra.Command{
 	Use:   "htcache",
@@ -22,5 +21,4 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "show detail log")
 }

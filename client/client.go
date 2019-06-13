@@ -4,15 +4,28 @@ import (
 	"fmt"
 )
 
-type NewFunc func() Client
+type NewFunc func(string) Client
 
 var providers map[string]NewFunc = make(map[string]NewFunc)
 
 type Command struct {
-	Name string
-	Key string
+	Name  string
+	Key   string
 	Value []byte
 	Error error
+}
+
+func NewCommand(name, key string, value []byte) *Command {
+	return &Command{
+		Name:  name,
+		Key:   key,
+		Value: value,
+		Error: nil,
+	}
+}
+
+func (c *Command) String() string {
+	return fmt.Sprintf("Name: %s, Key: %s, Value: %v, Error: %v", c.Name, c.Key, c.Value, c.Error)
 }
 
 type Client interface {
@@ -27,9 +40,9 @@ func Register(name string, new NewFunc) {
 	providers[name] = new
 }
 
-func New(name string) Client {
-	if new, ok:= providers[name]; ok {
-		return new()
+func NewClient(name string, addr string) Client {
+	if new, ok := providers[name]; ok {
+		return new(addr)
 	}
 	panic(fmt.Sprintf("client %s is unregister", name))
 	return nil

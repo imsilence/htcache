@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"htcache/cache"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -24,18 +25,23 @@ func (handler *CacheHandler) ServeHTTP(response http.ResponseWriter, request *ht
 	switch request.Method {
 	case http.MethodGet:
 		if bytes, err := handler.Get(key); err == nil {
+			log.Printf("Get Key: %s, Value: %v", key, bytes)
 			response.Write(bytes)
 		} else if err == cache.NotFound {
+			log.Printf("Get Key: %s, Value: Empty", key)
 			response.WriteHeader(http.StatusNotFound)
 		} else {
+			log.Printf("Get Key: %s, Error: %v", key, err)
 			response.WriteHeader(http.StatusInternalServerError)
 		}
 	case http.MethodPost:
 		bytes, err := ioutil.ReadAll(request.Body)
 		if err == nil {
 			if err := handler.Set(key, bytes); err == nil {
+				log.Printf("Set Key: %s, Value: %v", key, bytes)
 				response.WriteHeader(http.StatusOK)
 			} else {
+				log.Printf("Set Key: %s, Value: %v, Error: %v", key, bytes, err)
 				response.WriteHeader(http.StatusInternalServerError)
 			}
 		} else {
@@ -43,8 +49,10 @@ func (handler *CacheHandler) ServeHTTP(response http.ResponseWriter, request *ht
 		}
 	case http.MethodDelete:
 		if err := handler.Del(key); err == nil {
+			log.Printf("Delete Key: %s", key)
 			response.WriteHeader(http.StatusOK)
 		} else {
+			log.Printf("Delete Key: %s, Error: %v", key, err)
 			response.WriteHeader(http.StatusInternalServerError)
 		}
 	default:

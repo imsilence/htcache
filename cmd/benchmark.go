@@ -8,12 +8,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var protocol string
-var host string
-var port int
-var concurrent int
-var total int
-var operation string
+var (
+	bprotocol   string
+	bhost       string
+	bport       int
+	bconcurrent int
+	btotal      int
+	boperation  string
+)
 
 var benchmarkCmd *cobra.Command = &cobra.Command{
 	Use:   "benchmark",
@@ -21,11 +23,11 @@ var benchmarkCmd *cobra.Command = &cobra.Command{
 	Long:  "htcache benchmark tools",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		bm := benchmark.NewBenchmark(
-			protocol,
-			fmt.Sprintf("%s:%d", host, port),
-			concurrent,
-			total,
-			operation,
+			bprotocol,
+			fmt.Sprintf("%s:%d", bhost, bport),
+			bconcurrent,
+			btotal,
+			boperation,
 		)
 		bm.Execute()
 		bm.Output(os.Stdin)
@@ -36,10 +38,10 @@ var benchmarkCmd *cobra.Command = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(benchmarkCmd)
 
-	benchmarkCmd.Flags().StringVarP(&protocol, "proto", "p", "http", "htcache protocol type [http/tcp]")
-	benchmarkCmd.Flags().StringVarP(&host, "host", "c", "localhost", "htcache server addr")
-	benchmarkCmd.Flags().IntVarP(&port, "port", "p", 8888, "htcache server port")
-	benchmarkCmd.Flags().IntVarP(&concurrent, "concurrent", "c", 10, "concurrent goroutine number")
-	benchmarkCmd.Flags().IntVarP(&total, "total", "t", 1000, "operation total count")
-	benchmarkCmd.Flags().StringVarP(&operation, "operation", "o", "mixed", "operation type[set/get/mixed]")
+	benchmarkCmd.Flags().StringVarP(&bprotocol, "proto", "p", "http", "htcache protocol type [http/tcp]")
+	benchmarkCmd.Flags().StringVarP(&bhost, "host", "H", "localhost", "htcache server addr")
+	benchmarkCmd.Flags().IntVarP(&bport, "port", "P", 8888, "htcache server port")
+	benchmarkCmd.Flags().IntVarP(&bconcurrent, "concurrent", "c", 10, "concurrent goroutine number")
+	benchmarkCmd.Flags().IntVarP(&btotal, "total", "t", 1000, "operation total count")
+	benchmarkCmd.Flags().StringVarP(&boperation, "operation", "o", "mixed", "operation type[set/get/mixed]")
 }
