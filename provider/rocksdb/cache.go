@@ -22,7 +22,7 @@ type Cache struct {
 	e  *C.char
 }
 
-func New() *Cache {
+func New() cache.Cache {
 	options := C.rocksdb_options_create()
 	C.rocksdb_options_increase_parallelism(options, C.int(runtime.NumCPU()))
 	C.rocksdb_options_set_create_if_missing(options, 1)

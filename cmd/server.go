@@ -2,13 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"htcache/cache"
 	"htcache/http"
-	"htcache/provider/memory"
-	"htcache/provider/rocksdb"
+	"htcache/cache"
 	"htcache/tcp"
 	"sync"
 	"github.com/spf13/cobra"
+	_ "htcache/provider"
 )
 
 var ctype string
@@ -20,13 +19,7 @@ var serverCmd *cobra.Command = &cobra.Command{
 	Short: "htcache server",
 	Long:  "htcache server",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var cache cache.Cache
-		switch ctype {
-		case "rocksdb":
-			cache = rocksdb.New()
-		default:
-			cache = memory.New()
-		}
+		cache := cache.New(ctype)
 
 		var wg sync.WaitGroup
 		wg.Add(2)
