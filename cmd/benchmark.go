@@ -37,8 +37,8 @@ func init() {
 	rootCmd.AddCommand(benchmarkCmd)
 
 	benchmarkCmd.Flags().StringVarP(&protocol, "proto", "p", "http", "htcache protocol type [http/tcp]")
-	benchmarkCmd.Flags().StringVarP(&host, "host", "H", "localhost", "htcache server addr")
-	benchmarkCmd.Flags().IntVarP(&port, "port", "P", 8888, "htcache server port")
+	benchmarkCmd.Flags().StringVarP(&host, "host", "c", "localhost", "htcache server addr")
+	benchmarkCmd.Flags().IntVarP(&port, "port", "p", 8888, "htcache server port")
 	benchmarkCmd.Flags().IntVarP(&concurrent, "concurrent", "c", 10, "concurrent goroutine number")
 	benchmarkCmd.Flags().IntVarP(&total, "total", "t", 1000, "operation total count")
 	benchmarkCmd.Flags().StringVarP(&operation, "operation", "o", "mixed", "operation type[set/get/mixed]")

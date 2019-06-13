@@ -3,13 +3,14 @@ package http
 import (
 	"htcache/cache"
 	"net/http"
+	"htcache/server"
 )
 
 type Server struct {
 	cache.Cache
 }
 
-func New(c cache.Cache) *Server {
+func New(c cache.Cache) server.Server {
 	return &Server{c}
 }
 

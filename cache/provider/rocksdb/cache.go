@@ -1,7 +1,7 @@
 package rocksdb
 
-// #cgo CFLAGS: -I${SRCDIR}/../../rocksdb/include
-// #cgo LDFLAGS: -L${SRCDIR}/../../libs -L${SRCDIR}/../../rocksdb -lrocksdb -lsnappy -lbz2 -lz -lm -lstdc++ -ldl
+// #cgo CFLAGS: -I${SRCDIR}/../../../rocksdb/include
+// #cgo LDFLAGS: -L${SRCDIR}/../../../libs -L${SRCDIR}/../../../rocksdb -lrocksdb -lsnappy -lbz2 -lz -lm -lstdc++ -ldl
 // #include <stdlib.h>
 // #include "rocksdb/c.h"
 import "C"

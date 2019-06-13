@@ -7,7 +7,9 @@ import (
 
 var NotFound error = errors.New("Not Found")
 
-var providers map[string]func() Cache = make(map[string]func() Cache)
+type NewFunc func() Cache
+
+var providers map[string]NewFunc = make(map[string]NewFunc)
 
 type Cache interface {
 	Get(key string) ([]byte, error)
@@ -16,17 +18,17 @@ type Cache interface {
 	GetStat() Stat
 }
 
-func Register(ctype string, new func() Cache) {
-	if _, ok := providers[ctype]; ok {
-		panic(fmt.Sprintf("cache %s is exists", ctype))
+func Register(name string, new NewFunc) {
+	if _, ok := providers[name]; ok {
+		panic(fmt.Sprintf("cache %s is registered", name))
 	}
-	providers[ctype] = new
+	providers[name] = new
 }
 
-func New(ctype string) Cache {
-	if new, ok := providers[ctype]; ok {
+func New(name string) Cache {
+	if new, ok := providers[name]; ok {
 		return new()
 	}
-	panic(fmt.Sprintf("cache %s is not defined", ctype))
+	panic(fmt.Sprintf("cache %s is not unregister", name))
 	return nil
 }

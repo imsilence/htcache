@@ -2,37 +2,23 @@ package cmd
 
 import (
 	"fmt"
-	"htcache/http"
 	"htcache/cache"
-	"htcache/tcp"
-	"sync"
+	"htcache/server"
 	"github.com/spf13/cobra"
-	_ "htcache/provider"
+	_ "htcache/cache/provider"
+	_ "htcache/server/provider"
 )
 
 var ctype string
-var phttp int
-var ptcp int
+var stype string
+var sport int
 
 var serverCmd *cobra.Command = &cobra.Command{
 	Use:   "server",
 	Short: "htcache server",
 	Long:  "htcache server",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		cache := cache.New(ctype)
-
-		var wg sync.WaitGroup
-		wg.Add(2)
-
-		go func() {
-			http.New(cache).Listen(fmt.Sprintf(":%d", phttp))
-			wg.Done()
-		}()
-		go func() {
-			tcp.New(cache).Listen(fmt.Sprintf(":%d", ptcp))
-			wg.Done()
-		}()
-		wg.Wait()
+		server.New(stype, cache.New(ctype)).Listen(fmt.Sprintf(":%d", sport))
 		return nil
 	},
 }
@@ -41,6 +27,6 @@ func init() {
 	rootCmd.AddCommand(serverCmd)
 
 	serverCmd.Flags().StringVarP(&ctype, "type", "t", "memory", "cache type [memory/rocksdb]")
-	serverCmd.Flags().IntVarP(&phttp, "http", "H", 8888, "http server port")
-	serverCmd.Flags().IntVarP(&ptcp, "tcp", "T", 8889, "tcp server port")
+	serverCmd.Flags().StringVarP(&stype, "server", "s", "http", "server type [http/tcp]")
+	serverCmd.Flags().IntVarP(&sport, "port", "p", 8888, "server port")
 }

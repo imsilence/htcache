@@ -116,7 +116,7 @@ func (b *Benchmark) Execute() {
 
 func (b *Benchmark) Run() *Result {
 	result := NewResult()
-	for i := 0; i < b.Total; i++ {
+	for i := 0; i < b.Total / b.Concurrent; i++ {
 		start := time.Now()
 		time.Sleep(time.Duration(rand.Intn(10)) * time.Millisecond)
 		elapsed := time.Now().Sub(start)

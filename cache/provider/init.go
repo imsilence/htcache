@@ -1,9 +1,9 @@
-package provider
+package cache
 
 import (
 	"htcache/cache"
-	"htcache/provider/memory"
-	"htcache/provider/rocksdb"
+	"htcache/cache/provider/memory"
+	"htcache/cache/provider/rocksdb"
 )
 
 func init() {
