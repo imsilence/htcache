@@ -2,8 +2,10 @@ package benchmark
 
 import (
 	"fmt"
+	"htcache/client"
 	"io"
 	"math/rand"
+	"strings"
 	"sync"
 	"time"
 )
@@ -115,12 +117,36 @@ func (b *Benchmark) Execute() {
 }
 
 func (b *Benchmark) Run() *Result {
+	var command *client.Command
+
 	result := NewResult()
-	for i := 0; i < b.Total / b.Concurrent; i++ {
+	cli := client.NewClient(b.Protocol, b.Addr)
+	key := strings.Repeat("A", 1024)
+
+	for i := 0; i < b.Total/b.Concurrent; i++ {
 		start := time.Now()
-		time.Sleep(time.Duration(rand.Intn(10)) * time.Millisecond)
-		elapsed := time.Now().Sub(start)
+
 		rtype := b.Operation
+		if rtype == "mixed" {
+			rtype = "set"
+			if rand.Int()%2 == 0 {
+				rtype = "get"
+			}
+		}
+		switch rtype {
+		case "set":
+			command = client.NewCommand(rtype, fmt.Sprintf("%s_%d", key, i), []byte(fmt.Sprintf("%s_%d", key, i)))
+			cli.Run(command)
+		case "get":
+			command = client.NewCommand(rtype, fmt.Sprintf("%s_%d", key, i), nil)
+			cli.Run(command)
+			if len(command.Value) == 0 {
+				rtype = "miss"
+			}
+		}
+
+		elapsed := time.Now().Sub(start)
+
 		result.AddDuration(elapsed, rtype)
 	}
 
