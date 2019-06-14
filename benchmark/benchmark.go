@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"strconv"
 )
 
 type Statistics struct {
@@ -128,8 +129,8 @@ func (b *Benchmark) Execute() {
 }
 
 func (b *Benchmark) Run() *Result {
-	key := strings.Repeat("k", b.Klen)
-	value := strings.Repeat("v", b.Vlen)
+	key := strings.Repeat(strconv.Itoa(rand.Intn(31) + int('a')), b.Klen)
+	value := strings.Repeat(strconv.Itoa(rand.Intn(31) + int('A')), b.Vlen)
 
 	var command *client.Command
 
@@ -168,11 +169,13 @@ func (b *Benchmark) Run() *Result {
 }
 
 func (b *Benchmark) PipelineRun() *Result {
+	key := strings.Repeat(strconv.Itoa(rand.Intn(31) + int('a')), b.Klen)
+	value := strings.Repeat(strconv.Itoa(rand.Intn(31) + int('A')), b.Vlen)
+
 	commands := make([]*client.Command, 0)
 	result := NewResult()
 	cli := client.NewClient(b.Protocol, b.Addr)
 	defer cli.Close()
-	key := strings.Repeat("A", 1024)
 
 	start := time.Now()
 	for i := 0; i < b.Total/b.Concurrent; i++ {
@@ -185,7 +188,7 @@ func (b *Benchmark) PipelineRun() *Result {
 		}
 		switch rtype {
 		case "set":
-			commands = append(commands, client.NewCommand(rtype, fmt.Sprintf("%s_%d", key, i), []byte(fmt.Sprintf("%s_%d", key, i))))
+			commands = append(commands, client.NewCommand(rtype, fmt.Sprintf("%s_%d", key, i), []byte(fmt.Sprintf("%s_%d", value, i))))
 		case "get":
 			commands = append(commands, client.NewCommand(rtype, fmt.Sprintf("%s_%d", key, i), nil))
 		}

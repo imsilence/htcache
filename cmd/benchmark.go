@@ -36,7 +36,7 @@ var benchmarkCmd *cobra.Command = &cobra.Command{
 			bvlen,
 		)
 		bm.Execute()
-		bm.Output(os.Stdin)
+		bm.Output(os.Stdout)
 		return nil
 	},
 }
