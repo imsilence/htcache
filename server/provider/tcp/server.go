@@ -65,6 +65,7 @@ END:
 					break END
 				}
 				bytes, err := s.Get(key)
+				log.Printf("Get Key: %s, Value: %v, Error: %v", key, bytes, err)
 				s.response(bytes, err, conn)
 			case 'S':
 				key, value, err := s.readKeyAndValue(reader)
@@ -75,6 +76,7 @@ END:
 					break END
 				}
 				err = s.Set(key, value)
+				log.Printf("Set Key: %s, Value: %v, Error: %v", key, value, err)
 				s.response(nil, err, conn)
 			case 'D':
 				key, err := s.readKey(reader)
@@ -84,6 +86,8 @@ END:
 					}
 					break END
 				}
+				err = s.Del(key)
+				log.Printf("Del Key: %s, Error: %v", key, err)
 				s.response(nil, s.Del(key), conn)
 			}
 		}
@@ -140,10 +144,10 @@ func (s *Server) readKeyAndValue(reader *bufio.Reader) (string, []byte, error) {
 func (s *Server) response(result []byte, err error, conn net.Conn) error {
 	if err != nil {
 		e := err.Error()
-		_, err := conn.Write([]byte(fmt.Sprintf("-%d%s", len(e), e)))
+		_, err := conn.Write([]byte(fmt.Sprintf("-%d %s", len(e), e)))
 		return err
 	} else {
-		_, err := conn.Write(append([]byte(fmt.Sprintf("%d", len(result))), result...))
+		_, err := conn.Write(append([]byte(fmt.Sprintf("%d ", len(result))), result...))
 		return err
 	}
 }

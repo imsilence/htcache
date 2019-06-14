@@ -66,3 +66,7 @@ func (c *Client) Run(command *client.Command) {
 func (c *Client) Pipeline(commands []*client.Command) {
 	panic("http pipeline run not implement")
 }
+
+func (c *Client) Close() error {
+	return nil
+}

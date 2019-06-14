@@ -24,7 +24,9 @@ var clientCmd *cobra.Command = &cobra.Command{
 	Long:  "htcache client",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		command := client.NewCommand(coperation, ckey, []byte(cvalue))
-		client.NewClient(cprotocol, fmt.Sprintf("%s:%d", chost, cport)).Run(command)
+		cli := client.NewClient(cprotocol, fmt.Sprintf("%s:%d", chost, cport))
+		defer cli.Close()
+		cli.Run(command)
 		fmt.Println(command)
 		return nil
 	},

@@ -31,6 +31,7 @@ func (c *Command) String() string {
 type Client interface {
 	Run(*Command)
 	Pipeline([]*Command)
+	Close() error
 }
 
 func Register(name string, new NewFunc) {

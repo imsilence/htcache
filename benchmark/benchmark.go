@@ -121,6 +121,7 @@ func (b *Benchmark) Run() *Result {
 
 	result := NewResult()
 	cli := client.NewClient(b.Protocol, b.Addr)
+	defer cli.Close()
 	key := strings.Repeat("A", 1024)
 
 	for i := 0; i < b.Total/b.Concurrent; i++ {
