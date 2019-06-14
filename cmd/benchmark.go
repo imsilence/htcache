@@ -15,6 +15,9 @@ var (
 	bconcurrent int
 	btotal      int
 	boperation  string
+	bpipeline int
+	bklen int
+	bvlen int
 )
 
 var benchmarkCmd *cobra.Command = &cobra.Command{
@@ -28,6 +31,9 @@ var benchmarkCmd *cobra.Command = &cobra.Command{
 			bconcurrent,
 			btotal,
 			boperation,
+			bpipeline,
+			bklen,
+			bvlen,
 		)
 		bm.Execute()
 		bm.Output(os.Stdin)
@@ -44,4 +50,7 @@ func init() {
 	benchmarkCmd.Flags().IntVarP(&bconcurrent, "concurrent", "c", 10, "concurrent goroutine number")
 	benchmarkCmd.Flags().IntVarP(&btotal, "total", "t", 1000, "operation total count")
 	benchmarkCmd.Flags().StringVarP(&boperation, "operation", "o", "mixed", "operation type[set/get/mixed]")
+	benchmarkCmd.Flags().IntVarP(&bpipeline, "pipeline", "C", 1, "pipline")
+	benchmarkCmd.Flags().IntVarP(&bklen, "klen", "k", 1024, "key length")
+	benchmarkCmd.Flags().IntVarP(&bvlen, "vlen", "v", 1024, "value length")
 }

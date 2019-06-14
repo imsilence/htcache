@@ -78,16 +78,22 @@ type Benchmark struct {
 	Concurrent int
 	Total      int
 	Operation  string
+	Pipeline int
+	Klen int
+	Vlen int
 	Result     *Result
 	Elapsed    time.Duration
 }
 
-func NewBenchmark(protocol string, addr string, concurrent int, total int, operation string) *Benchmark {
+func NewBenchmark(protocol string, addr string, concurrent int, total int, operation string, pipeline int, klen int, vlen int) *Benchmark {
 	return &Benchmark{
 		Protocol:   protocol,
 		Addr:       addr,
 		Concurrent: concurrent,
 		Total:      total,
+		Pipeline:pipeline,
+		Klen: klen,
+		Vlen: vlen,
 		Operation:  operation,
 		Result:     NewResult(),
 	}
@@ -102,7 +108,12 @@ func (b *Benchmark) Execute() {
 
 	for i := 0; i < b.Concurrent; i++ {
 		go func() {
-			results <- b.Run()
+			if b.Pipeline > 1 {
+				results <- b.PipelineRun()
+			} else {
+				results <- b.Run()
+			}
+
 			wg.Done()
 		}()
 	}
@@ -117,12 +128,14 @@ func (b *Benchmark) Execute() {
 }
 
 func (b *Benchmark) Run() *Result {
+	key := strings.Repeat("k", b.Klen)
+	value := strings.Repeat("v", b.Vlen)
+
 	var command *client.Command
 
 	result := NewResult()
 	cli := client.NewClient(b.Protocol, b.Addr)
 	defer cli.Close()
-	key := strings.Repeat("A", 1024)
 
 	for i := 0; i < b.Total/b.Concurrent; i++ {
 		start := time.Now()
@@ -136,7 +149,7 @@ func (b *Benchmark) Run() *Result {
 		}
 		switch rtype {
 		case "set":
-			command = client.NewCommand(rtype, fmt.Sprintf("%s_%d", key, i), []byte(fmt.Sprintf("%s_%d", key, i)))
+			command = client.NewCommand(rtype, fmt.Sprintf("%s_%d", key, i), []byte(fmt.Sprintf("%s_%d", value, i)))
 			cli.Run(command)
 		case "get":
 			command = client.NewCommand(rtype, fmt.Sprintf("%s_%d", key, i), nil)
@@ -154,8 +167,72 @@ func (b *Benchmark) Run() *Result {
 	return result
 }
 
+func (b *Benchmark) PipelineRun() *Result {
+	commands := make([]*client.Command, 0)
+	result := NewResult()
+	cli := client.NewClient(b.Protocol, b.Addr)
+	defer cli.Close()
+	key := strings.Repeat("A", 1024)
+
+	start := time.Now()
+	for i := 0; i < b.Total/b.Concurrent; i++ {
+		rtype := b.Operation
+		if rtype == "mixed" {
+			rtype = "set"
+			if rand.Int()%2 == 0 {
+				rtype = "get"
+			}
+		}
+		switch rtype {
+		case "set":
+			commands = append(commands, client.NewCommand(rtype, fmt.Sprintf("%s_%d", key, i), []byte(fmt.Sprintf("%s_%d", key, i))))
+		case "get":
+			commands = append(commands, client.NewCommand(rtype, fmt.Sprintf("%s_%d", key, i), nil))
+		}
+
+		if len(commands) >= b.Pipeline {
+			cli.Pipeline(commands)
+			elapsed := time.Duration(float64(time.Now().Sub(start)) / float64(b.Pipeline))
+			for _, command := range commands {
+				switch command.Name {
+				case "set":
+					result.AddDuration(elapsed, command.Name)
+				case "get":
+					if len(command.Value) == 0 {
+						result.AddDuration(elapsed, "miss")
+					} else {
+						result.AddDuration(elapsed, command.Name)
+					}
+				}
+			}
+			commands = make([]*client.Command, 0)
+			start = time.Now()
+		}
+
+	}
+	if len(commands) >= 0 {
+		cli.Pipeline(commands)
+		elapsed := time.Duration(float64(time.Now().Sub(start)) / float64(b.Pipeline))
+		for _, command := range commands {
+			switch command.Name {
+			case "set":
+				result.AddDuration(elapsed, command.Name)
+			case "get":
+				if len(command.Value) == 0 {
+					result.AddDuration(elapsed, "miss")
+				} else {
+					result.AddDuration(elapsed, command.Name)
+				}
+			}
+		}
+		commands = make([]*client.Command, 0)
+	}
+	return result
+}
+
 func (b *Benchmark) Output(writer io.Writer) {
 	fmt.Fprintf(writer, "elapsed: %s\n", b.Elapsed)
+	fmt.Fprintf(writer, "pipline: %d\n", b.Pipeline)
 	fmt.Fprintf(writer, "Set Count: %d\n", b.Result.Set)
 	fmt.Fprintf(writer, "Get Count: %d\n", b.Result.Get)
 	fmt.Fprintf(writer, "Miss Count: %d\n", b.Result.Miss)

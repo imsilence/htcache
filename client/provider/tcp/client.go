@@ -82,5 +82,32 @@ func (s *Client) readResult(reader *bufio.Reader) ([]byte, error) {
 }
 
 func (c *Client) Pipeline(commands []*client.Command) {
-	panic("tcp pipeline run not implement")
+	reader := bufio.NewReader(c)
+	for _, command:= range commands {
+		switch command.Name {
+		case "get":
+			fmt.Fprintf(c, "G%d %s", len(command.Key), command.Key)
+		case "set":
+			fmt.Fprintf(c, "S%d %d %s%s", len(command.Key), len(command.Value), command.Key, command.Value)
+		case "delete", "del":
+			fmt.Fprintf(c, "D%d %s", len(command.Key), command.Key)
+		}
+	}
+	for _, command := range commands {
+		switch command.Name {
+		case "get":
+			value, err := c.readResult(reader)
+			if err == nil {
+				command.Value = value
+			} else if err.Error() == cache.NotFound.Error() {
+				command.Value = nil
+			} else {
+				command.Error = err
+			}
+		case "set":
+			command.Value, command.Error = c.readResult(reader)
+		case "delete", "del":
+			command.Value, command.Error = c.readResult(reader)
+		}
+	}
 }
