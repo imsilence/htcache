@@ -5,10 +5,10 @@ import (
 	"htcache/client"
 	"io"
 	"math/rand"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
-	"strconv"
 )
 
 type Statistics struct {
@@ -79,9 +79,9 @@ type Benchmark struct {
 	Concurrent int
 	Total      int
 	Operation  string
-	Pipeline int
-	Klen int
-	Vlen int
+	Pipeline   int
+	Klen       int
+	Vlen       int
 	Result     *Result
 	Elapsed    time.Duration
 }
@@ -92,9 +92,9 @@ func NewBenchmark(protocol string, addr string, concurrent int, total int, opera
 		Addr:       addr,
 		Concurrent: concurrent,
 		Total:      total,
-		Pipeline:pipeline,
-		Klen: klen,
-		Vlen: vlen,
+		Pipeline:   pipeline,
+		Klen:       klen,
+		Vlen:       vlen,
 		Operation:  operation,
 		Result:     NewResult(),
 	}
@@ -129,8 +129,8 @@ func (b *Benchmark) Execute() {
 }
 
 func (b *Benchmark) Run() *Result {
-	key := strings.Repeat(strconv.Itoa(rand.Intn(31) + int('a')), b.Klen)
-	value := strings.Repeat(strconv.Itoa(rand.Intn(31) + int('A')), b.Vlen)
+	key := strings.Repeat(strconv.Itoa(rand.Intn(31)+int('a')), b.Klen)
+	value := strings.Repeat(strconv.Itoa(rand.Intn(31)+int('A')), b.Vlen)
 
 	var command *client.Command
 
@@ -169,8 +169,8 @@ func (b *Benchmark) Run() *Result {
 }
 
 func (b *Benchmark) PipelineRun() *Result {
-	key := strings.Repeat(strconv.Itoa(rand.Intn(31) + int('a')), b.Klen)
-	value := strings.Repeat(strconv.Itoa(rand.Intn(31) + int('A')), b.Vlen)
+	key := strings.Repeat(strconv.Itoa(rand.Intn(31)+int('a')), b.Klen)
+	value := strings.Repeat(strconv.Itoa(rand.Intn(31)+int('A')), b.Vlen)
 
 	commands := make([]*client.Command, 0)
 	result := NewResult()
@@ -215,7 +215,7 @@ func (b *Benchmark) PipelineRun() *Result {
 	}
 	if len(commands) >= 0 {
 		cli.Pipeline(commands)
-		elapsed := time.Duration(float64(time.Now().Sub(start)) / float64(b.Pipeline))
+		elapsed := time.Now().Sub(start)
 		for _, command := range commands {
 			switch command.Name {
 			case "set":
@@ -252,7 +252,7 @@ func (b *Benchmark) Output(writer io.Writer) {
 	}
 
 	fmt.Fprintf(writer, "qps: %.2f\n", float64(b.Result.Total)/float64(b.Elapsed.Seconds()))
-	fmt.Fprintf(writer, "average request: %.2f ms\n", float64(duration.Seconds()*1000)/float64(count))
+	fmt.Fprintf(writer, "average request: %.2f us\n", float64(duration.Seconds()*1000000)/float64(count))
 }
 
 func init() {

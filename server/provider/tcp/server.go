@@ -4,13 +4,13 @@ import (
 	"bufio"
 	"fmt"
 	"htcache/cache"
+	"htcache/server"
 	"io"
 	"log"
 	"net"
 	"strconv"
 	"strings"
 	"time"
-	"htcache/server"
 )
 
 type Server struct {
@@ -65,7 +65,7 @@ END:
 					break END
 				}
 				bytes, err := s.Get(key)
-				log.Printf("Get Key: %s, Value: %v, Error: %v", key, bytes, err)
+				// log.Printf("Get Key: %s, Value: %v, Error: %v", key, bytes, err)
 				s.response(bytes, err, conn)
 			case 'S':
 				key, value, err := s.readKeyAndValue(reader)
@@ -76,7 +76,7 @@ END:
 					break END
 				}
 				err = s.Set(key, value)
-				log.Printf("Set Key: %s, Value: %v, Error: %v", key, value, err)
+				// log.Printf("Set Key: %s, Value: %v, Error: %v", key, value, err)
 				s.response(nil, err, conn)
 			case 'D':
 				key, err := s.readKey(reader)
