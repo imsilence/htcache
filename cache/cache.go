@@ -7,16 +7,16 @@ import (
 
 var NotFound error = errors.New("Not Found")
 
-type NewFunc func() Cache
-
-var providers map[string]NewFunc = make(map[string]NewFunc)
-
 type Cache interface {
 	Get(key string) ([]byte, error)
 	Set(key string, value []byte) error
 	Del(key string) error
 	GetStat() Stat
 }
+
+type NewFunc func() (Cache, error)
+
+var providers map[string]NewFunc = make(map[string]NewFunc)
 
 func Register(name string, new NewFunc) {
 	if _, ok := providers[name]; ok {
@@ -25,10 +25,9 @@ func Register(name string, new NewFunc) {
 	providers[name] = new
 }
 
-func NewCache(name string) Cache {
+func NewCache(name string) (Cache, error) {
 	if new, ok := providers[name]; ok {
 		return new()
 	}
-	panic(fmt.Sprintf("cache %s is not unregister", name))
-	return nil
+	return nil, fmt.Errorf("cache %s is not unregister", name)
 }

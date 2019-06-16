@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-type NewFunc func(string) Client
+type NewFunc func(string) (Client, error)
 
 var providers map[string]NewFunc = make(map[string]NewFunc)
 
@@ -29,8 +29,8 @@ func (c *Command) String() string {
 }
 
 type Client interface {
-	Run(*Command)
-	Pipeline([]*Command)
+	Run(*Command) error
+	Pipeline([]*Command) error
 	Close() error
 }
 
@@ -41,10 +41,9 @@ func Register(name string, new NewFunc) {
 	providers[name] = new
 }
 
-func NewClient(name string, addr string) Client {
+func NewClient(name string, addr string) (Client, error) {
 	if new, ok := providers[name]; ok {
 		return new(addr)
 	}
-	panic(fmt.Sprintf("client %s is unregister", name))
-	return nil
+	return nil, fmt.Errorf("client %s is unregister", name)
 }

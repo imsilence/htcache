@@ -17,15 +17,15 @@ type Client struct {
 	Addr string
 }
 
-func New(addr string) client.Client {
+func New(addr string) (client.Client, error) {
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
-		panic(fmt.Sprintf("connect %s error", addr))
+		return nil, err
 	}
-	return &Client{conn, addr}
+	return &Client{conn, addr}, nil
 }
 
-func (c *Client) Run(command *client.Command) {
+func (c *Client) Run(command *client.Command) error {
 	reader := bufio.NewReader(c)
 	switch command.Name {
 	case "get":
@@ -45,6 +45,7 @@ func (c *Client) Run(command *client.Command) {
 		fmt.Fprintf(c, "D%d %s", len(command.Key), command.Key)
 		command.Value, command.Error = c.readResult(reader)
 	}
+	return nil
 }
 
 func (s *Client) readLen(reader *bufio.Reader) (int, error) {
@@ -81,7 +82,7 @@ func (s *Client) readResult(reader *bufio.Reader) ([]byte, error) {
 
 }
 
-func (c *Client) Pipeline(commands []*client.Command) {
+func (c *Client) Pipeline(commands []*client.Command) error {
 	reader := bufio.NewReader(c)
 	for _, command:= range commands {
 		switch command.Name {
@@ -110,4 +111,5 @@ func (c *Client) Pipeline(commands []*client.Command) {
 			command.Value, command.Error = c.readResult(reader)
 		}
 	}
+	return nil
 }

@@ -22,17 +22,17 @@ type Cache struct {
 	e  *C.char
 }
 
-func New() cache.Cache {
+func New() (cache.Cache, error) {
 	options := C.rocksdb_options_create()
 	C.rocksdb_options_increase_parallelism(options, C.int(runtime.NumCPU()))
 	C.rocksdb_options_set_create_if_missing(options, 1)
 	var e *C.char
 	db := C.rocksdb_open(options, C.CString("rocksdb.db"), &e)
 	if e != nil {
-		panic(C.GoString(e))
+		return nil, errors.New(C.GoString(e)))
 	}
 	C.rocksdb_options_destroy(options)
-	return &Cache{db, C.rocksdb_readoptions_create(), C.rocksdb_writeoptions_create(), e}
+	return &Cache{db, C.rocksdb_readoptions_create(), C.rocksdb_writeoptions_create(), e}, nil
 }
 
 func (c *Cache) Get(key string) ([]byte, error) {

@@ -135,7 +135,10 @@ func (b *Benchmark) Run() *Result {
 	var command *client.Command
 
 	result := NewResult()
-	cli := client.NewClient(b.Protocol, b.Addr)
+	cli, err := client.NewClient(b.Protocol, b.Addr)
+	if err != nil {
+		panic(err)
+	}
 	defer cli.Close()
 
 	for i := 0; i < b.Total/b.Concurrent; i++ {

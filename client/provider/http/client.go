@@ -13,16 +13,16 @@ type Client struct {
 	Addr string
 }
 
-func New(addr string) client.Client {
+func New(addr string) (client.Client, error) {
 	return &Client{
 		Client: &http.Client{
 			Transport: &http.Transport{},
 		},
 		Addr: addr,
-	}
+	}, nil
 }
 
-func (c *Client) Run(command *client.Command) {
+func (c *Client) Run(command *client.Command) error {
 	url := fmt.Sprintf("http://%s/cache/%s/", c.Addr, command.Key)
 
 	switch command.Name {
@@ -61,10 +61,11 @@ func (c *Client) Run(command *client.Command) {
 			}
 		}
 	}
+	return nil
 }
 
-func (c *Client) Pipeline(commands []*client.Command) {
-	panic("http pipeline run not implement")
+func (c *Client) Pipeline(commands []*client.Command) error {
+	return errros.New("http pipeline run not implement")
 }
 
 func (c *Client) Close() error {
