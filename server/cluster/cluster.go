@@ -19,9 +19,24 @@ func Register(name string, new NewFunc) {
 	providers[name] = new
 }
 
-func NewNode(name, addr, cluster string) (Node, error) {
-	if new, ok := providers[name]; ok {
-		return new(addr, cluster)
+func NewNode(name, cluster, addr, maddr string) (Node, error) {
+	new, ok := providers[name]
+	if !ok {
+		return nil, fmt.Errorf("node %s is unregister", name)
 	}
-	return nil, fmt.Errorf("node %s is unregister", name)
+
+	node, err := new(addr, cluster)
+	if err != nil {
+		return node, err
+	}
+
+	server, err := NewServer(node)
+	if err != nil {
+		return node, err
+	}
+	go func() {
+		server.Listen(maddr)
+	} ()
+	return node, nil
+
 }

@@ -2,6 +2,8 @@ package gossip
 
 import (
 	"htcache/server/cluster"
+	"net"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/memberlist"
@@ -23,17 +25,21 @@ func (n *Node) Addr() string {
 }
 
 func New(addr, cluster string) (cluster.Node, error) {
+	host, _, _ := net.SplitHostPort(addr)
+
 	config := memberlist.DefaultLANConfig()
 	config.Name = addr
-	config.BindAddr = addr
+	config.BindAddr = host
+	config.AdvertiseAddr = host
 	ml, err := memberlist.Create(config)
 	if err != nil {
 		return nil, err
 	}
-	if cluster == "" {
-		cluster = addr
+	nodes := []string{host}
+	if cluster != "" {
+		nodes = strings.Split(cluster, ",")
 	}
-	_, err = ml.Join([]string{cluster})
+	_, err = ml.Join(nodes)
 	if err != nil {
 		return nil, err
 	}

@@ -2,8 +2,10 @@ package http
 
 import (
 	"encoding/json"
+	"fmt"
 	"htcache/cache"
 	"io/ioutil"
+
 	// "log"
 	"net/http"
 	"strings"
@@ -21,6 +23,11 @@ func (handler *CacheHandler) ServeHTTP(response http.ResponseWriter, request *ht
 	}
 
 	key := strings.TrimSpace(paths[2])
+	addr, ok := handler.IsProcess(key)
+	if !ok {
+		http.Redirect(response, request, fmt.Sprintf("http://%s/%s/%s", addr, paths[1], key), http.StatusFound)
+		return
+	}
 
 	switch request.Method {
 	case http.MethodGet:

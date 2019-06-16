@@ -23,7 +23,7 @@ func Register(name string, new NewFunc) {
 
 func NewServer(name string, node cluster.Node, cache cache.Cache) (Server, error) {
 	if new, ok := providers[name]; ok {
-		return new(cluster, cache)
+		return new(node, cache)
 	}
 	return nil, fmt.Errorf("server %s is unregister", name)
 }

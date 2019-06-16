@@ -19,7 +19,7 @@ type Server struct {
 	cache.Cache
 }
 
-func New(n, cluster.Node, c cache.Cache) (server.Server, error) {
+func New(n cluster.Node, c cache.Cache) (server.Server, error) {
 	return &Server{n, c}, nil
 }
 
