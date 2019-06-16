@@ -6,6 +6,7 @@ import (
 	"htcache/client"
 	"io/ioutil"
 	"net/http"
+	"errors"
 )
 
 type Client struct {
@@ -65,7 +66,7 @@ func (c *Client) Run(command *client.Command) error {
 }
 
 func (c *Client) Pipeline(commands []*client.Command) error {
-	return errros.New("http pipeline run not implement")
+	return errors.New("http pipeline run not implement")
 }
 
 func (c *Client) Close() error {

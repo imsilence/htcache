@@ -11,4 +11,8 @@ replace (
 	golang.org/x/tools => github.com/golang/tools v0.0.0-20190612232758-d4e310b4a8a5
 )
 
-require github.com/spf13/cobra v0.0.5
+require (
+	github.com/hashicorp/memberlist v0.1.4
+	github.com/spf13/cobra v0.0.5
+	github.com/stathat/consistent v1.0.0
+)

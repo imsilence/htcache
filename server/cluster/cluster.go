@@ -12,7 +12,7 @@ type NewFunc func(addr, cluster string) (Node, error)
 
 var providers map[string]NewFunc = make(map[string]NewFunc)
 
-func Resister(name string, new NewFunc) {
+func Register(name string, new NewFunc) {
 	if _, ok := providers[name]; ok {
 		panic(fmt.Sprintf("node %s is registered", name))
 	}

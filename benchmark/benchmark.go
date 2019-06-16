@@ -110,11 +110,18 @@ func (b *Benchmark) Execute() {
 	for i := 0; i < b.Concurrent; i++ {
 		go func() {
 			if b.Pipeline > 1 {
-				results <- b.PipelineRun()
+				r, err := b.PipelineRun()
+				if err != nil {
+					panic(err)
+				}
+				results <- r
 			} else {
-				results <- b.Run()
+				r, err := b.Run()
+				if err != nil {
+					panic(err)
+				}
+				results <- r
 			}
-
 			wg.Done()
 		}()
 	}
@@ -128,7 +135,7 @@ func (b *Benchmark) Execute() {
 
 }
 
-func (b *Benchmark) Run() *Result {
+func (b *Benchmark) Run() (*Result, error) {
 	key := strings.Repeat(strconv.Itoa(rand.Intn(31)+int('a')), b.Klen)
 	value := strings.Repeat(strconv.Itoa(rand.Intn(31)+int('A')), b.Vlen)
 
@@ -137,7 +144,7 @@ func (b *Benchmark) Run() *Result {
 	result := NewResult()
 	cli, err := client.NewClient(b.Protocol, b.Addr)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer cli.Close()
 
@@ -168,16 +175,19 @@ func (b *Benchmark) Run() *Result {
 		result.AddDuration(elapsed, rtype)
 	}
 
-	return result
+	return result, nil
 }
 
-func (b *Benchmark) PipelineRun() *Result {
+func (b *Benchmark) PipelineRun() (*Result, error) {
 	key := strings.Repeat(strconv.Itoa(rand.Intn(31)+int('a')), b.Klen)
 	value := strings.Repeat(strconv.Itoa(rand.Intn(31)+int('A')), b.Vlen)
 
 	commands := make([]*client.Command, 0)
 	result := NewResult()
-	cli := client.NewClient(b.Protocol, b.Addr)
+	cli, err := client.NewClient(b.Protocol, b.Addr)
+	if err != nil {
+		return nil, err
+	}
 	defer cli.Close()
 
 	start := time.Now()
@@ -233,7 +243,7 @@ func (b *Benchmark) PipelineRun() *Result {
 		}
 		commands = make([]*client.Command, 0)
 	}
-	return result
+	return result, nil
 }
 
 func (b *Benchmark) Output(writer io.Writer) {

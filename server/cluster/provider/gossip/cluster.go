@@ -1,15 +1,25 @@
 package gossip
 
 import (
-	"time"
 	"htcache/server/cluster"
-	"github.com/stathat/consistent"
+	"time"
+
 	"github.com/hashicorp/memberlist"
+	"github.com/stathat/consistent"
 )
 
 type Node struct {
 	*consistent.Consistent
-	Addr string
+	addr string
+}
+
+func (n *Node) IsProcess(key string) (string, bool) {
+	addr, _ := n.Get(key)
+	return addr, addr == n.Addr()
+}
+
+func (n *Node) Addr() string {
+	return n.addr
 }
 
 func New(addr, cluster string) (cluster.Node, error) {
@@ -23,14 +33,14 @@ func New(addr, cluster string) (cluster.Node, error) {
 	if cluster == "" {
 		cluster = addr
 	}
-	_, err := ml.Join([]string{cluster})
+	_, err = ml.Join([]string{cluster})
 	if err != nil {
 		return nil, err
 	}
 	ch := consistent.New()
 	ch.NumberOfReplicas = 1024
 	go func() {
-		for _ = range timer.Tick(time.Second) {
+		for _ = range time.Tick(time.Second) {
 			members := ml.Members()
 			nodes := make([]string, len(members))
 			for index, member := range members {
@@ -39,4 +49,5 @@ func New(addr, cluster string) (cluster.Node, error) {
 			ch.Set(nodes)
 		}
 	}()
+	return &Node{ch, addr}, nil
 }

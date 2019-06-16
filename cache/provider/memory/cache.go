@@ -11,14 +11,13 @@ type Cache struct {
 	cache.Stat
 }
 
-func New() cache.Cache {
+func New() (cache.Cache, error) {
 	return &Cache{
 		cache: make(map[string][]byte),
 		mutex: sync.RWMutex{},
 		Stat:  cache.Stat{},
-	}
+	}, nil
 }
-
 
 func (c *Cache) Get(key string) ([]byte, error) {
 	c.mutex.RLock()
