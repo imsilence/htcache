@@ -1,6 +1,7 @@
 package http
 
 import (
+	"htcache/server/cluster"
 	"htcache/cache"
 	"htcache/server"
 	"log"
@@ -8,11 +9,12 @@ import (
 )
 
 type Server struct {
+	cluster.Node
 	cache.Cache
 }
 
-func New(c cache.Cache) (server.Server, error) {
-	return &Server{c}, nil
+func New(n cluster.Node, c cache.Cache) (server.Server, error) {
+	return &Server{n, c}, nil
 }
 
 func (s *Server) Listen(addr string) error {

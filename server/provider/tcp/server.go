@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"htcache/cache"
 	"htcache/server"
+	"htcache/server/cluster"
 	"io"
 	"log"
 	"net"
@@ -14,11 +15,12 @@ import (
 )
 
 type Server struct {
+	cluster.Node
 	cache.Cache
 }
 
-func New(c cache.Cache) (server.Server, error) {
-	return &Server{c}, nil
+func New(n, cluster.Node, c cache.Cache) (server.Server, error) {
+	return &Server{n, c}, nil
 }
 
 func (s *Server) Listen(addr string) error {
@@ -65,9 +67,14 @@ END:
 					}
 					break END
 				}
-				bytes, err := s.Get(key)
-				// log.Printf("Get Key: %s, Value: %v, Error: %v", key, bytes, err)
-				s.response(bytes, err, conn)
+
+				if addr, ok := s.IsProcess(key); !ok {
+					s.response(nil, fmt.Errorf("redirect: %s", addr), conn)
+				} else {
+					bytes, err := s.Get(key)
+					// log.Printf("Get Key: %s, Value: %v, Error: %v", key, bytes, err)
+					s.response(bytes, err, conn)
+				}
 			case 'S':
 				key, value, err := s.readKeyAndValue(reader)
 				if err != nil {
@@ -76,9 +83,14 @@ END:
 					}
 					break END
 				}
-				err = s.Set(key, value)
-				// log.Printf("Set Key: %s, Value: %v, Error: %v", key, value, err)
-				s.response(nil, err, conn)
+
+				if addr, ok := s.IsProcess(key); !ok {
+					s.response(nil, fmt.Errorf("redirect: %s", addr), conn)
+				} else {
+					err = s.Set(key, value)
+					// log.Printf("Set Key: %s, Value: %v, Error: %v", key, value, err)
+					s.response(nil, err, conn)
+				}
 			case 'D':
 				key, err := s.readKey(reader)
 				if err != nil {
@@ -87,9 +99,14 @@ END:
 					}
 					break END
 				}
-				err = s.Del(key)
-				log.Printf("Del Key: %s, Error: %v", key, err)
-				s.response(nil, s.Del(key), conn)
+
+				if addr, ok := s.IsProcess(key); !ok {
+					s.response(nil, fmt.Errorf("redirect: %s", addr), conn)
+				} else {
+					err = s.Del(key)
+					log.Printf("Del Key: %s, Error: %v", key, err)
+					s.response(nil, s.Del(key), conn)
+				}
 			}
 		}
 	}

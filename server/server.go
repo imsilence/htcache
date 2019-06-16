@@ -10,8 +10,7 @@ type Server interface {
 	Listen(addr string) error
 }
 
-//type NewFunc func(cluster.Node, cache.Cache) (Server, error)
-type NewFunc func(cache.Cache) (Server, error)
+type NewFunc func(cluster.Node, cache.Cache) (Server, error)
 
 var providers map[string]NewFunc = make(map[string]NewFunc)
 
@@ -24,7 +23,7 @@ func Register(name string, new NewFunc) {
 
 func NewServer(name string, node cluster.Node, cache cache.Cache) (Server, error) {
 	if new, ok := providers[name]; ok {
-		return new(cache)
+		return new(cluster, cache)
 	}
 	return nil, fmt.Errorf("server %s is unregister", name)
 }
