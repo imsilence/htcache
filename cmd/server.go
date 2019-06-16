@@ -8,6 +8,7 @@ import (
 	"htcache/server/cluster"
 	_ "htcache/server/cluster/provider"
 	_ "htcache/server/provider"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -20,6 +21,7 @@ var (
 	scaddr   string
 	scport   int
 	saddr    string
+	sttl     time.Duration
 )
 
 var serverCmd *cobra.Command = &cobra.Command{
@@ -27,7 +29,7 @@ var serverCmd *cobra.Command = &cobra.Command{
 	Short: "htcache server",
 	Long:  "htcache server",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		cache, err := cache.NewCache(ctype)
+		cache, err := cache.NewCache(ctype, sttl)
 		if err != nil {
 			return err
 		}
@@ -53,5 +55,6 @@ func init() {
 	serverCmd.Flags().IntVarP(&scport, "cport", "P", 8889, "cluster manager port")
 	serverCmd.Flags().StringVarP(&ctype, "type", "t", "memory", "cache type [memory/rocksdb]")
 	serverCmd.Flags().StringVarP(&stype, "server", "s", "http", "server type [http/tcp]")
+	serverCmd.Flags().DurationVarP(&sttl, "ttl", "T", time.Hour, "cache ttl")
 
 }

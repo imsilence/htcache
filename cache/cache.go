@@ -3,6 +3,7 @@ package cache
 import (
 	"errors"
 	"fmt"
+	"time"
 )
 
 var NotFound error = errors.New("Not Found")
@@ -14,7 +15,7 @@ type Cache interface {
 	GetStat() Stat
 }
 
-type NewFunc func() (Cache, error)
+type NewFunc func(time.Duration) (Cache, error)
 
 var providers map[string]NewFunc = make(map[string]NewFunc)
 
@@ -25,9 +26,9 @@ func Register(name string, new NewFunc) {
 	providers[name] = new
 }
 
-func NewCache(name string) (Cache, error) {
+func NewCache(name string, ttl time.Duration) (Cache, error) {
 	if new, ok := providers[name]; ok {
-		return new()
+		return new(ttl)
 	}
 	return nil, fmt.Errorf("cache %s is not unregister", name)
 }
