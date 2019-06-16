@@ -3,15 +3,18 @@ package server
 import (
 	"fmt"
 	"htcache/cache"
+	"htcache/server/cluster"
 )
 
-type NewFunc func(cache.Cache) Server
-
-var providers map[string]NewFunc = make(map[string]NewFunc)
 
 type Server interface {
-	Listen(addr string)
+	Listen(addr string) error
 }
+
+
+type NewFunc func(node cluster.Node, cache.Cache) (Server, error)
+
+var providers map[string]NewFunc = make(map[string]NewFunc)
 
 func Register(name string, new NewFunc) {
 	if _, ok := providers[name]; ok {
@@ -20,10 +23,9 @@ func Register(name string, new NewFunc) {
 	providers[name] = new
 }
 
-func NewServer(name string, cache cache.Cache) Server {
+func NewServer(name string, node cluster.Node, cache cache.Cache) (Server, error) {
 	if new, ok := providers[name]; ok {
 		return new(cache)
 	}
-	panic(fmt.Sprintf("server %s is unregister", name))
-	return nil
+	return nil, fmt.Errorf("server %s is unregister", name)
 }

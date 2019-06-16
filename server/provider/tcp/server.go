@@ -17,14 +17,14 @@ type Server struct {
 	cache.Cache
 }
 
-func New(c cache.Cache) server.Server {
-	return &Server{c}
+func New(c cache.Cache) (server.Server, error) {
+	return &Server{c}, nil
 }
 
-func (s *Server) Listen(addr string) {
+func (s *Server) Listen(addr string) error {
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer listener.Close()
 	log.Printf("Started TCP Server, Listen On: %s", addr)
@@ -36,6 +36,7 @@ func (s *Server) Listen(addr string) {
 		log.Printf("Client is Conncted: %s", conn.RemoteAddr())
 		go s.Process(conn)
 	}
+	return nil
 }
 
 func (s *Server) Process(conn net.Conn) {
