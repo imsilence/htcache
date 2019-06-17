@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"unsafe"
 	"time"
+	"fmt"
 )
 
 type Cache struct {
@@ -28,10 +29,16 @@ func New(ttl time.Duration) (cache.Cache, error) {
 	C.rocksdb_options_increase_parallelism(options, C.int(runtime.NumCPU()))
 	C.rocksdb_options_set_create_if_missing(options, 1)
 	var e *C.char
-	// db := C.rocksdb_open(options, C.CString("rocksdb.db"), &e)
-	db := C.rocksdb_with_ttl(options, C.Cstring("rocksdb.db"), C.int(ttl), &e)
+	var db *C.rocksdb_t
+
+	if int(ttl) > 0 {
+		db = C.rocksdb_open_with_ttl(options, C.CString("rocksdb.db"), C.int(int(ttl/time.Second)), &e)
+	} else {
+		db = C.rocksdb_open(options, C.CString("rocksdb.db"), &e)
+	}
+
 	if e != nil {
-		return nil, errors.New(C.GoString(e)))
+		return nil, errors.New(C.GoString(e))
 	}
 	C.rocksdb_options_destroy(options)
 	return &Cache{db, C.rocksdb_readoptions_create(), C.rocksdb_writeoptions_create(), e}, nil
