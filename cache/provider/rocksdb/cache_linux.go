@@ -14,7 +14,6 @@ import (
 	"strconv"
 	"unsafe"
 	"time"
-	"fmt"
 )
 
 type Cache struct {
